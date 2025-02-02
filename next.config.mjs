@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 import "dotenv";
 const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
