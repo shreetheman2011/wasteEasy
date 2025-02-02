@@ -1,5 +1,5 @@
 "use client";
-import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin } from "lucide-react";
+import { Leaf, Recycle, Users, Coins, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";

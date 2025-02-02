@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -62,7 +61,6 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
 
 const web3auth = new Web3Auth({
   clientId,
-  verifier,
   web3AuthNetwork: WEB3AUTH_NETWORK.TESTNET, // Changed from SAPPHIRE_MAINNET to TESTNET
   privateKeyProvider,
 });
@@ -94,34 +92,12 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   useEffect(() => {
     const init = async () => {
       try {
-        await web3auth.initModal({
-          modalConfig: {
-            [WALLET_ADAPTERS.OPENLOGIN]: {
-              loginMethods: {
-                sms_passwordless: {
-                  name: "sms_passwordless",
-                  showOnModal: false,
-                  showOnDesktop: false,
-                },
-                facebook: {
-                  name: "facebook",
-                  showOnModal: false,
-                  showOnDesktop: false,
-                },
-                reddit: {
-                  name: "reddit",
-                  showOnModal: false,
-                  showOnDesktop: false,
-                },
-              },
-            },
-          },
-        });
+        await web3auth.initModal();
         setProvider(web3auth.provider);
 
         if (web3auth.connected) {
           setLoggedIn(true);
-          const user = await web3auth.getUserInfo();
+          const user = (await web3auth.getUserInfo()) as any[string];
           setUserInfo(user);
           if (user.email) {
             localStorage.setItem("userEmail", user.email);
@@ -133,7 +109,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             }
           } else if (user.oAuthIdToken) {
             try {
-              await createUser(user?.name || "Anonymous User");
+              await createUser(user.email, user?.name || "Anonymous User");
             } catch (error) {
               console.error("Error creating user:", error);
               // Handle the error appropriately, maybe show a message to the user
@@ -155,7 +131,9 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       if (userInfo && userInfo.email) {
         const user = await getUserByEmail(userInfo.email);
         if (user) {
-          const unreadNotifications = await getUnreadNotifications(user.id);
+          const unreadNotifications = (await getUnreadNotifications(
+            user.id
+          )) as any[string];
           setNotifications(unreadNotifications);
         }
       }

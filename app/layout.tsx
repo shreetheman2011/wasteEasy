@@ -11,8 +11,6 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { getAvailableRewards, getUserByEmail } from "@/utils/db/actions";
 
-require("dotenv").config();
-
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
@@ -33,7 +31,8 @@ export default function RootLayout({
           if (user) {
             const availableRewards = (await getAvailableRewards(
               user.id
-            )) as any;
+            )) as any[string];
+            //change made from any to any[string]
             setTotalEarnings(availableRewards);
           }
         }

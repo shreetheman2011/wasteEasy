@@ -5,8 +5,6 @@ import {
   MapPin,
   CheckCircle,
   Clock,
-  ArrowRight,
-  Camera,
   Upload,
   Loader,
   Calendar,
@@ -209,6 +207,7 @@ export default function CollectPage() {
           await saveCollectedWaste(selectedTask.id, user.id, parsedResult);
 
           setReward(earnedReward);
+          console.log(reward);
 
           window.location.reload();
           toast.success(

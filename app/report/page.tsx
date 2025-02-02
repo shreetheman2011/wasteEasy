@@ -15,13 +15,14 @@ import {
   getUserByEmail,
 } from "@/utils/db/actions";
 
-const geminiApiKey = process.env.GEMINI_API_KEY as any;
-const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
+const geminiApiKey = process.env.GEMINI_API_KEY as any[string];
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any[string];
 
 const libraries: Libraries = ["places"];
 
 export default function ReportPage() {
-  const [user, setUser] = useState("") as any;
+  const [user, setUser] = useState("") as any[string];
+  //changed from any to any[string]
   const router = useRouter();
 
   const [reports, setReports] = useState<
@@ -201,7 +202,8 @@ export default function ReportPage() {
           newReport.amount,
           preview || undefined,
           verificationResult ? JSON.stringify(verificationResult) : undefined
-        )) as any;
+        )) as any[string];
+        //changed from any to any[string]
         if (!report) {
           throw new Error(
             "Failed to create report: report is null or undefined"
@@ -249,10 +251,13 @@ export default function ReportPage() {
 
         if (user) {
           const recentReports = await getRecentReports();
-          const formattedReports = recentReports?.map((report: any) => ({
-            ...report,
-            createdAt: report.createdAt.toDateString().split("T")[0],
-          }));
+          //changed from any to any[string]
+          const formattedReports = recentReports?.map(
+            (report: any[string]) => ({
+              ...report,
+              createdAt: report.createdAt.toDateString().split("T")[0],
+            })
+          );
           setReports(formattedReports);
         } else {
           toast.error(
