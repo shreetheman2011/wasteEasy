@@ -297,57 +297,63 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
               <Search className="h-5 w-5" />
             </Button>
           )}
-          <div className=" mr-5">
-            <p className="text-xs text-gray-600 italic ">
-              Notifications and points will be updated on reload!
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="mr-2 relative">
-                <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 px-1 min-w-[1.2rem] h-5">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              {notifications.length > 0 ? (
-                notifications.map((notification) => (
-                  <DropdownMenuItem
-                    key={notification.id}
-                    onClick={() => handleNotificationClick(notification.id)}
-                  >
+          {loggedIn && (
+            <>
+              <div className=" mr-5">
+                <p className="text-xs text-gray-600 italic ">
+                  Notifications and points will be updated on reload!
+                </p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="mr-2 relative">
+                    <Bell className="h-5 w-5" />
+                    {notifications.length > 0 && (
+                      <Badge className="absolute -top-1 -right-1 px-1 min-w-[1.2rem] h-5">
+                        {notifications.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <DropdownMenuItem
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification.id)}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {notification.type}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {notification.message}
+                          </span>
+                        </div>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem>
                     <div className="flex flex-col">
-                      <span className="font-medium">{notification.type}</span>
                       <span className="text-sm text-gray-500">
-                        {notification.message}
+                        Click notifications to mark as read
                       </span>
                     </div>
                   </DropdownMenuItem>
-                ))
-              ) : (
-                <DropdownMenuItem>No new notifications</DropdownMenuItem>
-              )}
-              <DropdownMenuItem>
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">
-                    Click notifications to mark as read
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="mr-2 md:mr-4 flex items-center bg-gray-100 rounded-full px-2 md:px-3 py-1">
+                <Link href="/rewards" className="flex items-center">
+                  <Coins className="h-4 w-4 md:h-5 md:w-5 mr-1 text-green-500" />
+                  <span className="font-semibold text-sm md:text-base text-gray-800">
+                    {balance.toFixed(2)}
                   </span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div className="mr-2 md:mr-4 flex items-center bg-gray-100 rounded-full px-2 md:px-3 py-1">
-            <Link href="/rewards" className="flex items-center">
-              <Coins className="h-4 w-4 md:h-5 md:w-5 mr-1 text-green-500" />
-              <span className="font-semibold text-sm md:text-base text-gray-800">
-                {balance.toFixed(2)}
-              </span>
-            </Link>
-          </div>
+                </Link>
+              </div>
+            </>
+          )}
 
           {!loggedIn ? (
             <>
