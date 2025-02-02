@@ -12,7 +12,6 @@ import {
   User,
   ChevronDown,
   LogIn,
-  LogOut,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,12 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Web3Auth } from "@web3auth/modal";
-import {
-  CHAIN_NAMESPACES,
-  IProvider,
-  WALLET_ADAPTERS,
-  WEB3AUTH_NETWORK,
-} from "@web3auth/base";
+import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
@@ -43,7 +37,6 @@ import { useRouter } from "next/navigation";
 const clientId =
   "BJKdDFkNtkWX87XqkuWrDu4rbkSvWyQZ5lswS0ucINxxcN0inRVW8zzKAywPPzgiOHP7_3PcfFwfpvcQvSdaLRs";
 
-const verifier = "waste-custom-test";
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
   chainId: "0xaa36a7",
@@ -82,6 +75,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const router = useRouter();
 
   console.log("user info", userInfo);
+  console.log(totalEarnings);
 
   const handleSearchClick = () => {
     toast.error(
@@ -97,7 +91,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
 
         if (web3auth.connected) {
           setLoggedIn(true);
-          const user = (await web3auth.getUserInfo()) as any[string];
+          const user = (await web3auth.getUserInfo()) as any;
           setUserInfo(user);
           if (user.email) {
             localStorage.setItem("userEmail", user.email);
@@ -133,7 +127,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
         if (user) {
           const unreadNotifications = (await getUnreadNotifications(
             user.id
-          )) as any[string];
+          )) as any;
           setNotifications(unreadNotifications);
         }
       }

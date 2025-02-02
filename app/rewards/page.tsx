@@ -63,7 +63,7 @@ export default function RewardsPage() {
             setRewards(fetchedRewards);
 
             const calculatedBalance = fetchedTransactions?.reduce(
-              (acc: any[string], transaction) => {
+              (acc: any, transaction) => {
                 return transaction.type.startsWith("earned")
                   ? acc + transaction.amount
                   : acc - transaction.amount;
@@ -168,7 +168,7 @@ export default function RewardsPage() {
         setRewards(fetchedRewards.filter((r) => r.cost > 0)); // Filter out rewards with 0 points
 
         // Recalculate balance
-        const calculatedBalance: any[string] = fetchedTransactions?.reduce(
+        const calculatedBalance: any = fetchedTransactions?.reduce(
           (acc, transaction) => {
             return transaction.type.startsWith("earned")
               ? acc + transaction.amount

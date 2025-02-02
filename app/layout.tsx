@@ -31,8 +31,8 @@ export default function RootLayout({
           if (user) {
             const availableRewards = (await getAvailableRewards(
               user.id
-            )) as any[string];
-            //change made from any to any[string]
+            )) as any;
+            //change made from any to any
             setTotalEarnings(availableRewards);
           }
         }
