@@ -55,7 +55,7 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
 
 const web3auth = new Web3Auth({
   clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET, // Changed from SAPPHIRE_MAINNET to TESTNET
+  web3AuthNetwork: WEB3AUTH_NETWORK.MAINNET, // Changed from SAPPHIRE_MAINNET to TESTNET
   privateKeyProvider,
 });
 
@@ -88,6 +88,10 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     const init = async () => {
       try {
         await web3auth.initModal();
+      } catch (e) {
+        console.log("Error initializing modal", e);
+      }
+      try {
         setProvider(web3auth.provider);
 
         if (web3auth.connected) {
