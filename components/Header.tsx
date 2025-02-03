@@ -36,7 +36,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 const clientId =
-  "BJKdDFkNtkWX87XqkuWrDu4rbkSvWyQZ5lswS0ucINxxcN0inRVW8zzKAywPPzgiOHP7_3PcfFwfpvcQvSdaLRs";
+  "BKVU0F8x9OV8Ty42fYg5a2QxcLKucvaSpIGj-uv2JMOfrN8axhggKo-c3qxjT_vSh2JT2zgKTYRmbh9xAprlsG0";
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -55,7 +55,7 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
 
 const web3auth = new Web3Auth({
   clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.TESTNET, // Changed from SAPPHIRE_MAINNET to TESTNET
+  web3AuthNetwork: WEB3AUTH_NETWORK.MAINNET, // Changed from SAPPHIRE_MAINNET to TESTNET
   privateKeyProvider,
 });
 
