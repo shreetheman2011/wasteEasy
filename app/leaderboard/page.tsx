@@ -29,16 +29,14 @@ export default function LeaderboardPage() {
           fetchedRewards
             .reduce((map, reward) => {
               if (map.has(reward.userId)) {
-                // If user already exists, add to their points
-                map.get(reward.userId).points += reward.points;
+                map.get(reward.userId)!.points += reward.points;
               } else {
-                // Otherwise, add the user to the map
                 map.set(reward.userId, { ...reward });
               }
               return map;
             }, new Map())
             .values()
-        );
+        ).sort((a, b) => b.points - a.points); // Sort in descending order
 
         setRewards(uniqueRewards);
 
@@ -100,7 +98,7 @@ export default function LeaderboardPage() {
                       User
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Points(may be after redemption)
+                      Points(may be after redemption)
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Level
