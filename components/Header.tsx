@@ -36,7 +36,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
 const clientId =
-  "BAPQXFd4RRmtP96LmKvqteegKx8ionP9rzLx14i2mK0kYlyhEb_E_JgTanntH6fszRqzxfL2YK2ZPrPfAnnGzts";
+  "BDgj3UuqtRuECN1Qkj3wpcNGPSdroK6fcGLBEGGUcbYKicGzMgM5pIkrZu5oZmyCEgpXJnQsLxHuWZ-dJcAyjRk";
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
