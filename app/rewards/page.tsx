@@ -264,57 +264,11 @@ export default function RewardsPage() {
             Available Rewards
           </h2>
           <div className="space-y-4">
-            {rewards.length > 0 ? (
-              rewards.map((reward) => (
                 <div
-                  key={reward.id}
                   className="bg-white p-4 rounded-xl shadow-md"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {reward.name}
-                    </h3>
-                    <span className="text-green-500 font-semibold">
-                      {reward.cost} points
-                    </span>
-                  </div>
-                  <p className="text-gray-600 mb-2">{reward.description}</p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {reward.collectionInfo}
-                  </p>
-                  {reward.id === 0 ? (
-                    <div className="space-y-2">
-                      <Button
-                        onClick={handleRedeemAllPoints}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white"
-                        disabled={balance === 0}
-                      >
-                        <Gift className="w-4 h-4 mr-2" />
-                        Redeem All Points
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={() => handleRedeemReward(reward.id)}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white"
-                      disabled={balance < reward.cost}
-                    >
-                      <Gift className="w-4 h-4 mr-2" />
-                      Redeem Reward
-                    </Button>
-                  )}
+                  Please Check In With Your Organization Leader To Find Available Rewards!
                 </div>
-              ))
-            ) : (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-                <div className="flex items-center">
-                  <AlertCircle className="h-6 w-6 text-yellow-400 mr-3" />
-                  <p className="text-yellow-700">
-                    No rewards available at the moment.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
