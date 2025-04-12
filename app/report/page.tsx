@@ -226,11 +226,6 @@ export default function ReportPage() {
         setVerificationResults(null);
       }
 
-      if (file !== null) {
-        toast.success(
-          `Report submitted successfully! You've earned points for reporting waste`
-        );
-      }
     } catch (e) {
       console.error("Error creating report", e);
       toast.error("Failed to submit report. Please try again!");
