@@ -135,13 +135,16 @@ export default function ReportPage() {
         1. The type of waste (e.g., plastic, paper, glass, metal, organic, etc.)
         2. An estimate of the quantity or amount (in kg or lb or liters)
         3. Your confidence level in this assessment (as a percentage)
-        
+        4. The bin it goes in(choose from: recyclables, landfill, and organics)
+
+        DO NOT ENTER ANY OTHER WORDS FOR THE QUANTITY. ONLY 10 kg or 0.5 kg things like that. Not approximately.... Or do 0.5-10 kg.
         
         Respond in JSON format like this:
         {
           "wasteType": "type of waste",
           "quantity": "estimated quantity with unit",
-          "confidence": confidence level as a number between 0 and 1
+          "confidence": confidence level as a number between 0 and 1,
+          "bin": "bin name"
         }`;
 
       const result = await model.generateContent([prompt, ...imageParts]);
@@ -154,7 +157,8 @@ export default function ReportPage() {
         if (
           parsedResult.wasteType &&
           parsedResult.quantity &&
-          parsedResult.confidence
+          parsedResult.confidence &&
+          parsedResult.bin
         ) {
           setVerificationResults(parsedResult);
           setVerificationStatus("success");
@@ -162,6 +166,7 @@ export default function ReportPage() {
             ...newReport,
             type: parsedResult.wasteType,
             amount: parsedResult.quantity,
+            bin: parsedResult.bin
           });
         } else {
           console.error("Invalid verification results", parsedResult);
@@ -346,6 +351,7 @@ export default function ReportPage() {
                 <div className="mt-2 text-sm text-green-700">
                   <p>Waste Type: {verificationResult.wasteType}</p>
                   <p>Quantity: {verificationResult.quantity}</p>
+                  <p>Bin: {verificationResult.bin}</p>
                   <p>
                     Confidence:{" "}
                     {(verificationResult.confidence * 100).toFixed(2)}%
