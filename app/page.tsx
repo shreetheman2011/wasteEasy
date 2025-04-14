@@ -129,7 +129,7 @@ export default function Home() {
           />
           <ImpactCard
             title="Non Profits suppport us"
-            value={"6"}
+            value={"2"}
             icon={Users}
           />
           <ImpactCard
