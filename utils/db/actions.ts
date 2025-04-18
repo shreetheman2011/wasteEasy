@@ -106,7 +106,7 @@ export async function markNotificationAsRead(notificationId: number) {
   }
 }
 
-export async function getWasteCollectionTasks(limit: number = 20) {
+export async function getWasteCollectionTasks(limit: number = 200) {
   try {
     const tasks = await db
       .select({
