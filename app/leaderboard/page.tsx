@@ -70,7 +70,7 @@ export default function LeaderboardPage() {
     <div>
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-         LIVE Leaderboard{" "}
+         LIVE Leaderboard(Must have at least 20 points){" "}
         </h1>
 
         {loading ? (
