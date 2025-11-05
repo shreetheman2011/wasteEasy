@@ -24,6 +24,12 @@ export default function ReportPage() {
   const [user, setUser] = useState("") as any;
   //changed from any to any
   const router = useRouter();
+  function capitalizeFirstLetter(word) {
+  if (typeof word !== 'string' || word.length === 0) {
+    return word; // Handle non-string or empty input
+  }
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
 
   const [reports, setReports] = useState<
     Array<{
@@ -351,7 +357,7 @@ export default function ReportPage() {
                 <div className="mt-2 text-sm text-green-700">
                   <p>Waste Type: {verificationResult.wasteType}</p>
                   <p>Quantity: {verificationResult.quantity}</p>
-                  <p>Bin: {verificationResult.bin}</p>
+                  <p>Bin: {capitalizeFirstLetter(verificationResult.bin)}</p>
                   <p>
                     Confidence:{" "}
                     {(verificationResult.confidence * 100).toFixed(2)}%
