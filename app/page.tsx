@@ -102,7 +102,7 @@ export default function Home() {
         <FeatureCard
           icon={Users}
           title="Community-Driven"
-          description="A project made by Zero-to-Hero, a community-driven company committed to educating about world problems, led by Shree Manickaraja, a student of 14 years!"
+          description="A project made by Zero-to-Hero, a community-driven company committed to educating about world problems, led by Shree Manickaraja, a high school student!"
         />
       </section>
 
