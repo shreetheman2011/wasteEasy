@@ -78,8 +78,8 @@ export default function Home() {
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
           Join us in making waste managment more efficient and rewarding using
-          WasteEasy, the leading platform for organizations who prioritize waste
-          reduction education! Scroll down to learn more! ⬇️
+          WasteEasy, a platform for organizations who prioritize waste
+          reduction education! Scroll down to learn more!
         </p>
         <Link href="/report">
           <Button className="bg-green-600 hover:bg-green-700 text-white text-lg py-6 px-10 rounded-full">
