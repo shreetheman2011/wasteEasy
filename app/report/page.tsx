@@ -299,13 +299,12 @@ export default function ReportPage() {
                   htmlFor="waste-image"
                   className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500"
                 >
-                  <span>Upload a pic of the trash on the ground</span>
+                  <span>Upload a picture of the trash</span>
                   <p className="text-gray-700">
-                    Make sure you can clearly see the waste
+                    Make sure you can clearly see the waste for best results
                   </p>
                   <p className="text-gray-700">
-                    If you're going to pick it up, make sure to say so in the
-                    litter cleanup page!⬅️
+                    To pick it up, go to the litter cleanup page and submit a picture of the trash again!⬅️
                   </p>
                   <input
                     id="waste-image"
