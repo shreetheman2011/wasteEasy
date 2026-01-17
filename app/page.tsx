@@ -70,13 +70,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-10 sm:py-16">
       <section className="text-center mb-20">
         <AnimatedGlobe />
-        <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">
+        <h1 className="text-4xl sm:text-6xl font-bold mb-6 text-gray-800 tracking-tight">
           Waste<span className="text-green-600">Easy </span>Waste Management
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+        <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
           Join us in making waste managment more efficient and rewarding using
           WasteEasy, a platform for organizations who prioritize waste
           reduction education! Scroll down to learn more!
@@ -88,7 +88,7 @@ export default function Home() {
         </Link>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-10 mb-20">
+      <section className="grid md:grid-cols-3 gap-6 md:gap-10 mb-16 md:mb-20">
         <FeatureCard
           icon={Leaf}
           title="Go Green!"
@@ -106,7 +106,7 @@ export default function Home() {
         />
       </section>
 
-      <section className="bg-white p-10 rounded-3xl shadow-lg mb-20">
+      <section className="bg-white p-6 sm:p-10 rounded-3xl shadow-lg mb-16 md:mb-20">
         <h2 className="text-4xl font-bold mb-12 text-center text-gray-800">
           Our Impact
         </h2>

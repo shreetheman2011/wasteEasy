@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { MapPin, Upload, CheckCircle, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { StandaloneSearchBox, useJsApiLoader } from "@react-google-maps/api";
-import { Libraries } from "@react-google-maps/api";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import {
@@ -16,20 +14,16 @@ import {
 } from "@/utils/db/actions";
 
 const geminiApiKey = process.env.GEMINI_API_KEY as any;
-const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY as any;
-
-const libraries: Libraries = ["places"];
 
 export default function ReportPage() {
   const [user, setUser] = useState("") as any;
-  //changed from any to any
   const router = useRouter();
-  function capitalizeFirstLetter(word) {
-  if (typeof word !== 'string' || word.length === 0) {
-    return word; // Handle non-string or empty input
+  function capitalizeFirstLetter(word: any) {
+    if (typeof word !== "string" || word.length === 0) {
+      return word; // Handle non-string or empty input
+    }
+    return word.charAt(0).toUpperCase() + word.slice(1);
   }
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
 
   const [reports, setReports] = useState<
     Array<{
@@ -46,10 +40,16 @@ export default function ReportPage() {
     location: "",
     type: "",
     amount: "",
+    bin: "",
   });
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   const [verificationStatus, setVerificationStatus] = useState<
     "idle" | "verifying" | "success" | "failure"
@@ -59,35 +59,14 @@ export default function ReportPage() {
     wasteType: string;
     quantity: string;
     confidence: number;
+    bin: string;
   } | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
   const [searchBox, setSearchBox] =
     useState<google.maps.places.SearchBox | null>(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: googleMapsApiKey,
-    libraries: libraries,
-  });
-
-  const onLoad = useCallback((ref: google.maps.places.SearchBox) => {
-    setSearchBox(ref);
-  }, []);
-
-  const onPlaceChanged = () => {
-    if (searchBox) {
-      const places = searchBox.getPlaces();
-      if (places && places.length > 0) {
-        const place = places[0];
-        setNewReport((prev) => ({
-          ...prev,
-          location: place.formatted_address || "",
-        }));
-      }
-    }
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -107,6 +86,66 @@ export default function ReportPage() {
       };
       reader.readAsDataURL(selectedFile);
     }
+  };
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    if (showCamera) {
+      const initCamera = async () => {
+        try {
+          if (typeof navigator !== "undefined" && navigator.mediaDevices) {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+            });
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          }
+        } catch (error) {
+          console.error("Error accessing camera:", error);
+          setShowCamera(false);
+          cameraInputRef.current?.click();
+        }
+      };
+      initCamera();
+    }
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [showCamera]);
+
+  const handleOpenCamera = () => {
+    if (typeof navigator !== "undefined" && navigator.mediaDevices) {
+      setShowCamera(true);
+    } else {
+      cameraInputRef.current?.click();
+    }
+  };
+
+  const handleCloseCamera = () => {
+    setShowCamera(false);
+  };
+
+  const handleCapturePhoto = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg");
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const capturedFile = new File([blob], "captured.jpg", {
+      type: blob.type || "image/jpeg",
+    });
+    setFile(capturedFile);
+    setPreview(dataUrl);
+    handleCloseCamera();
   };
 
   const readFileAsBase64 = (file: File): Promise<string> => {
@@ -172,7 +211,7 @@ export default function ReportPage() {
             ...newReport,
             type: parsedResult.wasteType,
             amount: parsedResult.quantity,
-            bin: parsedResult.bin
+            bin: parsedResult.bin,
           });
         } else {
           console.error("Invalid verification results", parsedResult);
@@ -230,13 +269,13 @@ export default function ReportPage() {
         };
 
         setReports([formattedReport, ...reports]);
-        setNewReport({ location: "", type: "", amount: "" });
+        setNewReport({ location: "", type: "", amount: "", bin: "" });
         setFile(null);
         setPreview(null);
         setVerificationStatus("idle");
         setVerificationResults(null);
+        setSubmissionSuccess(true);
       }
-
     } catch (e) {
       console.error("Error creating report", e);
       toast.error("Failed to submit report. Please try again!");
@@ -274,51 +313,122 @@ export default function ReportPage() {
     checkUser();
   }, [router]);
 
+  if (submissionSuccess) {
+    return (
+      <div className="px-4 py-6 sm:p-8 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="bg-green-100 p-6 rounded-full mb-6">
+          <CheckCircle className="w-16 h-16 text-green-600" />
+        </div>
+        <h1 className="text-3xl font-bold mb-4 text-gray-800">
+          Report Submitted Successfully!
+        </h1>
+        <p className="text-gray-600 mb-8 max-w-md">
+          Thank you for helping keep our community clean. Your report has been
+          submitted and will be reviewed shortly.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+          <Button
+            onClick={() => setSubmissionSuccess(false)}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl"
+          >
+            Report Another
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 border-green-600 text-green-600 hover:bg-green-50 py-3 rounded-xl"
+            onClick={() => {
+              const shareData = {
+                title: "I reported waste using WasteEasy!",
+                text: "I just reported waste using WasteEasy! Join me in making our world cleaner.",
+                url: window.location.origin,
+              };
+              if (navigator.share) {
+                navigator
+                  .share(shareData)
+                  .then(() => console.log("Shared successfully"))
+                  .catch((error) => console.log("Error sharing", error));
+              } else {
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  shareData.text
+                )}&url=${encodeURIComponent(shareData.url)}`;
+                window.open(twitterUrl, "_blank");
+              }
+            }}
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Share Report
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 pl-1 ml-5 max-w-4xl mx-auto">
+    <div className="px-4 py-6 sm:p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold mb-6 text-gray-800">
         Report Waste
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-3xl shadow-lg mb-12"
+        className="bg-white p-4 sm:p-8 rounded-3xl shadow-lg mb-8 sm:mb-12"
       >
         <div className="mb-8">
-          <label
-            htmlFor="waste-image"
-            className="block text-lg font-medium text-gray-700 mb-2"
-          >
-            Upload Waste Image
+          <label className="block text-lg font-medium text-gray-700 mb-2">
+            Waste Image
           </label>
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-green-500 transition-colors duration-300">
-            <div className="space-y-1 text-center">
+            <div className="space-y-3 text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <div className="flex text-sm text-gray-600">
-                <label
-                  htmlFor="waste-image"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500"
+              <p className="text-sm text-gray-600">
+                Choose how you want to add a photo of the trash
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  <span>Upload a picture of the trash</span>
-                  <p className="text-gray-700">
-                    Make sure you can clearly see the waste for best results
-                  </p>
-                  <p className="text-gray-700">
-                    To pick it up, go to the litter cleanup page and submit a picture of the trash again!⬅️
-                  </p>
-                  <input
-                    id="waste-image"
-                    name="waste-image"
-                    type="file"
-                    className="sr-only"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                  />
-                </label>
+                  Upload from device
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleOpenCamera}
+                >
+                  Take a photo
+                </Button>
               </div>
+              <p className="text-gray-700">
+                Make sure you can clearly see the waste for best results
+              </p>
+              <p className="text-gray-700">
+                To pick it up, go to the litter cleanup page and submit a
+                picture of the trash again!⬅️
+              </p>
               <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
             </div>
           </div>
+          <input
+            ref={fileInputRef}
+            id="waste-image-upload"
+            name="waste-image-upload"
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+          <input
+            ref={cameraInputRef}
+            id="waste-image-camera"
+            name="waste-image-camera"
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+            accept="image/*"
+            capture="environment"
+          />
         </div>
         {preview && (
           <div className="mt-4 mb-8">
@@ -356,7 +466,9 @@ export default function ReportPage() {
                 <div className="mt-2 text-sm text-green-700">
                   <p>Waste Type: {verificationResult.wasteType}</p>
                   <p>Quantity: {verificationResult.quantity}</p>
-                  <p>Bin: {capitalizeFirstLetter(verificationResult.bin)}</p>
+                  <p className="font-bold">
+                    Bin: {capitalizeFirstLetter(verificationResult.bin)}
+                  </p>
                   <p>
                     Confidence:{" "}
                     {(verificationResult.confidence * 100).toFixed(2)}%
@@ -375,37 +487,16 @@ export default function ReportPage() {
             >
               Location
             </label>
-            {isLoaded ? (
-              <StandaloneSearchBox
-                onLoad={onLoad}
-                onPlacesChanged={onPlaceChanged}
-              >
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={newReport.location}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
-                  placeholder="Enter exact waste location"
-                />
-              </StandaloneSearchBox>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={newReport.location}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
-                  placeholder="Enter waste location"
-                />
-                <span>Not loading maps: ERROR</span>
-              </>
-            )}
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={newReport.location}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+              placeholder="Enter waste location"
+            />
           </div>
 
           <div>
@@ -447,6 +538,36 @@ export default function ReportPage() {
             />
           </div>
         </div>
+        {showCamera && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-4 w-full max-w-md">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full rounded-md mb-4"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleCapturePhoto}
+                >
+                  Capture photo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCloseCamera}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Button
           type="submit"
           className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg rounded-xl transition-colors duration-300 flex items-center justify-center"
@@ -467,7 +588,7 @@ export default function ReportPage() {
       </h2>
 
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr>

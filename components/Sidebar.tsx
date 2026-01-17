@@ -1,14 +1,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "./ui/button";
-import { MapPin, Trash, Coins, Medal, Home } from "lucide-react";
+import {
+  MapPin,
+  Trash,
+  Coins,
+  Medal,
+  Home,
+  Recycle,
+  Settings,
+} from "lucide-react";
 
 const sidebarItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/report", label: "Report Waste", icon: MapPin },
+  { href: "/bin-helper", label: "What Bin?", icon: Recycle },
   { href: "/collections", label: "Litter Cleanup", icon: Trash },
   { href: "/rewards", label: "Rewards", icon: Coins },
   { href: "/leaderboard", label: "Leaderboard", icon: Medal },
+  // { href: "/recycle-rush", label: "Recycle Rush", icon: Recycle },
 ];
 
 interface SidebarProps {

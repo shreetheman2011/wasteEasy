@@ -67,7 +67,7 @@ export default function LeaderboardPage() {
   }, []);
 
   return (
-    <div>
+    <div className="px-4 py-6 sm:py-8">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-semibold mb-6 text-gray-800">
          LIVE Leaderboard(Must have at least 20 points){" "}

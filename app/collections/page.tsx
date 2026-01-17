@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Trash2,
   MapPin,
@@ -97,6 +97,11 @@ export default function CollectPage() {
   } | null>(null);
   const [reward, setReward] = useState<number | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+
   const handleStatusChange = async (
     taskId: number,
     newStatus: CollectionTask["status"]
@@ -135,6 +140,60 @@ export default function CollectPage() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    if (showCamera) {
+      const initCamera = async () => {
+        try {
+          if (typeof navigator !== "undefined" && navigator.mediaDevices) {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: "environment" },
+            });
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          }
+        } catch (error) {
+          console.error("Error accessing camera:", error);
+          setShowCamera(false);
+          cameraInputRef.current?.click();
+        }
+      };
+      initCamera();
+    }
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [showCamera]);
+
+  const handleOpenCamera = () => {
+    if (typeof navigator !== "undefined" && navigator.mediaDevices) {
+      setShowCamera(true);
+    } else {
+      cameraInputRef.current?.click();
+    }
+  };
+
+  const handleCloseCamera = () => {
+    setShowCamera(false);
+  };
+
+  const handleCapturePhoto = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg");
+    setVerificationImage(dataUrl);
+    handleCloseCamera();
   };
 
   const readFileAsBase64 = (dataUrl: string): string => {
@@ -254,17 +313,14 @@ export default function CollectPage() {
         Waste Collection Tasks
       </h1>
 
-      <div className="mb-4 flex items-center">
+      <div className="mb-4 flex flex-col xs:flex-row items-stretch xs:items-center gap-2 xs:gap-0">
         <Input
           type="text"
           placeholder="Search by your organization area..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mr-2"
+          className="xs:mr-2"
         />
-        <Button variant="outline" size="icon">
-          <Search className="h-4 w-4" />
-        </Button>
       </div>
 
       {loading ? (
@@ -286,7 +342,7 @@ export default function CollectPage() {
                   </h2>
                   <StatusBadge status={task.status} />
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-sm text-gray-600 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600 mb-3">
                   <div className="flex items-center relative">
                     <Trash2 className="w-4 h-4 mr-2 text-gray-500" />
                     <span
@@ -386,32 +442,55 @@ export default function CollectPage() {
                 htmlFor="verification-image"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Upload Image
+                Verification Image
               </label>
               <div className="mt-1 flex justify-center text-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 justify-center text-center">
+                <div className="space-y-3 justify-center text-center">
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm justify-center text-center text-gray-600">
-                    <label
-                      htmlFor="verification-image"
-                      className="relative cursor-pointer justify-center text-center bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                  <p className="text-sm text-gray-600">
+                    Choose how you want to add a photo of the collected waste
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                      onClick={() => fileInputRef.current?.click()}
                     >
-                      <span className="text-center">Upload a file</span>
-                      <input
-                        id="verification-image"
-                        name="verification-image"
-                        type="file"
-                        className="sr-only"
-                        onChange={handleImageUpload}
-                        accept="image/*"
-                      />
-                    </label>
+                      Upload from device
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={handleOpenCamera}
+                    >
+                      Take a photo
+                    </Button>
                   </div>
                   <p className="text-xs text-gray-500">
                     PNG, JPG, GIF up to 10MB
                   </p>
                 </div>
               </div>
+              <input
+                ref={fileInputRef}
+                id="verification-image-upload"
+                name="verification-image-upload"
+                type="file"
+                className="hidden"
+                onChange={handleImageUpload}
+                accept="image/*"
+              />
+              <input
+                ref={cameraInputRef}
+                id="verification-image-camera"
+                name="verification-image-camera"
+                type="file"
+                className="hidden"
+                onChange={handleImageUpload}
+                accept="image/*"
+                capture="environment"
+              />
             </div>
             {verificationImage && (
               <img
@@ -436,6 +515,36 @@ export default function CollectPage() {
                 "Verify Collection"
               )}
             </Button>
+            {showCamera && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg p-4 w-full max-w-md">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full rounded-md mb-4"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={handleCapturePhoto}
+                    >
+                      Capture photo
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={handleCloseCamera}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {verificationStatus === "success" && verificationResult && (
               <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
                 <p>
