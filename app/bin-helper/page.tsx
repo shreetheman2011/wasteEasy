@@ -200,8 +200,8 @@ export default function BinHelperPage() {
 
       <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-lg mb-8">
         <p className="mb-4 text-gray-700">
-          Take or upload a photo of any trash item, and WasteEasy AI will help
-          you decide which bin it should go in.
+          Take or upload a photo of any trash item, and Gemini will help you
+          decide which bin it should go in.
         </p>
         <div className="mb-8">
           <label className="block text-lg font-medium text-gray-700 mb-2">
