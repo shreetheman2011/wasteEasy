@@ -1,32 +1,36 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Camera, Loader, CheckCircle } from "lucide-react";
+import { Upload, Camera, Loader, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { toast } from "react-hot-toast";
 
 const geminiApiKey = process.env.GEMINI_API_KEY as any;
 
-type AnalysisResult = {
-  wasteType: string;
-  quantity: string;
-  confidence: number;
-  bin: string;
+type ContaminationResult = {
+  contaminationPercentage: number;
+  contaminationSummary: string;
+  confidence?: number;
+  wasteType?: string;
+  quantity?: string;
 };
 
-export default function BinHelperPage() {
+export default function ContaminationPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<
-    "idle" | "verifying" | "success" | "failure"
+    "idle" | "analyzing" | "success" | "failure"
   >("idle");
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [result, setResult] = useState<ContaminationResult | null>(null);
 
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [selectedBin, setSelectedBin] = useState<
+    "recyclables" | "landfill" | "organics"
+  >("recyclables");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -113,20 +117,13 @@ export default function BinHelperPage() {
     });
   };
 
-  const formatBin = (bin: string) => {
-    if (typeof bin !== "string" || bin.length === 0) {
-      return bin;
-    }
-    return bin.charAt(0).toUpperCase() + bin.slice(1);
-  };
-
   const handleAnalyze = async () => {
     if (!file) {
       toast.error("Please upload or take a photo first.");
       return;
     }
 
-    setStatus("verifying");
+    setStatus("analyzing");
 
     try {
       const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -142,20 +139,21 @@ export default function BinHelperPage() {
         },
       ];
 
-      const prompt = `You are an expert in waste management and recycling. Analyze this image and provide:
-        1. The type of waste (e.g., plastic, paper, glass, metal, organic, etc.)
-        2. An estimate of the quantity or amount (in kg or lb or liters)
-        3. Your confidence level in this assessment (as a percentage)
-        4. The bin it goes in(choose from: recyclables, landfill, and organics)
-
-        DO NOT ENTER ANY OTHER WORDS FOR THE QUANTITY. ONLY 10 kg or 0.5 kg things like that. Not approximately.... Or do 0.5-10 kg.
+      const prompt = `You are an expert in waste management and recycling. The user is assessing contamination for the "${selectedBin}" bin. Analyze the image and estimate:
+        1) contaminationPercentage: the fraction of visible items that do NOT belong in the "${selectedBin}" bin (a number between 0 and 1)
+        2) contaminationSummary: a short sentence (max 20 words) describing the main contaminants
+        Optionally include:
+        3) confidence: number between 0 and 1
+        4) wasteType: overall dominant waste type
+        5) quantity: estimated quantity with unit
         
-        Respond in JSON format like this:
+        Respond in pure JSON:
         {
-          "wasteType": "type of waste",
-          "quantity": "estimated quantity with unit",
-          "confidence": confidence level as a number between 0 and 1,
-          "bin": "bin name"
+          "contaminationPercentage": number,
+          "contaminationSummary": "short description",
+          "confidence": number,
+          "wasteType": "string",
+          "quantity": "string"
         }`;
 
       const resultResponse = await model.generateContent([
@@ -169,10 +167,8 @@ export default function BinHelperPage() {
         const cleanedText = text.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(cleanedText);
         if (
-          parsed.wasteType &&
-          parsed.quantity &&
-          typeof parsed.confidence === "number" &&
-          parsed.bin
+          typeof parsed.contaminationPercentage === "number" &&
+          typeof parsed.contaminationSummary === "string"
         ) {
           setResult(parsed);
           setStatus("success");
@@ -195,24 +191,51 @@ export default function BinHelperPage() {
   return (
     <div className="px-4 py-6 sm:p-8 max-w-3xl mx-auto">
       <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-        What Bin Does This Go In?
+        Bin Contamination Checker
       </h1>
 
       <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-lg mb-8">
         <p className="mb-4 text-gray-700">
-          Take or upload a photo of any trash item, and WasteEasy AI will help
-          you decide which bin it should go in.
+          Upload or take a photo of a bin, select the bin type, and our AI model
+          trained on millions of real data points will estimate how much of the
+          contents don’t belong there.
         </p>
+
+        <div className="mb-6">
+          <label
+            htmlFor="bin-type"
+            className="block text-lg font-medium text-gray-700 mb-2"
+          >
+            Bin Type
+          </label>
+          <select
+            id="bin-type"
+            value={selectedBin}
+            onChange={(e) =>
+              setSelectedBin(
+                e.target.value as "recyclables" | "landfill" | "organics"
+              )
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300"
+          >
+            <option value="recyclables">Recyclables</option>
+            <option value="landfill">Landfill</option>
+            <option value="organics">Organics</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-2">
+            Used to estimate contamination level for this bin.
+          </p>
+        </div>
+
         <div className="mb-8">
           <label className="block text-lg font-medium text-gray-700 mb-2">
-            Waste Image
+            Bin Image
           </label>
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-green-500 transition-colors duration-300">
             <div className="space-y-3 text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
               <p className="text-sm text-gray-600">
-                Upload or take a photo and our AI model trained on millions of
-                real data points will help you decide which bin it should go in.
+                Choose how you want to add a photo
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
@@ -237,8 +260,8 @@ export default function BinHelperPage() {
           </div>
           <input
             ref={uploadInputRef}
-            id="bin-helper-upload"
-            name="bin-helper-upload"
+            id="contamination-upload"
+            name="contamination-upload"
             type="file"
             className="hidden"
             onChange={handleFileChange}
@@ -246,8 +269,8 @@ export default function BinHelperPage() {
           />
           <input
             ref={cameraInputRef}
-            id="bin-helper-camera"
-            name="bin-helper-camera"
+            id="contamination-camera"
+            name="contamination-camera"
             type="file"
             className="hidden"
             onChange={handleFileChange}
@@ -260,7 +283,7 @@ export default function BinHelperPage() {
           <div className="mt-4 mb-8">
             <img
               src={preview}
-              alt="Waste preview"
+              alt="Bin preview"
               className="max-w-full h-auto rounded-xl shadow-md"
             />
           </div>
@@ -270,31 +293,41 @@ export default function BinHelperPage() {
           type="button"
           onClick={handleAnalyze}
           className="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg rounded-xl transition-colors duration-300 flex items-center justify-center"
-          disabled={!file || status === "verifying"}
+          disabled={!file || status === "analyzing"}
         >
-          {status === "verifying" ? (
+          {status === "analyzing" ? (
             <>
               <Loader className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
               Analyzing...
             </>
           ) : (
-            "Ask WasteEasy AI"
+            "Analyze Contamination"
           )}
         </Button>
 
         {status === "success" && result && (
-          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4 rounded-r-xl">
-            <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded-r-xl">
+            <div className="flex items-start">
+              <AlertTriangle className="h-6 w-6 text-yellow-500 mr-3 mt-0.5" />
               <div>
-                <h3 className="text-lg font-medium text-green-800">
-                  Recommended Bin
+                <h3 className="text-lg font-medium text-yellow-800">
+                  Contamination Result
                 </h3>
-                <div className="mt-2 text-sm text-green-700">
-                  <p>Waste Type: {result.wasteType}</p>
-                  <p>Quantity: {result.quantity}</p>
-                  <p className="font-bold">Bin: {formatBin(result.bin)}</p>
-                  <p>Confidence: {(result.confidence * 100).toFixed(2)}%</p>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p className="font-bold">
+                    {`Contamination for ${
+                      selectedBin.charAt(0).toUpperCase() + selectedBin.slice(1)
+                    }:`}{" "}
+                    {(result.contaminationPercentage * 100).toFixed(0)}%
+                  </p>
+                  <p>Summary: {result.contaminationSummary}</p>
+                  {typeof result.confidence === "number" && (
+                    <p>Confidence: {(result.confidence * 100).toFixed(2)}%</p>
+                  )}
+                  {result.wasteType && (
+                    <p>Dominant Waste Type: {result.wasteType}</p>
+                  )}
+                  {result.quantity && <p>Quantity: {result.quantity}</p>}
                 </div>
               </div>
             </div>
@@ -307,6 +340,7 @@ export default function BinHelperPage() {
           </p>
         )}
       </div>
+
       {showCamera && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-4 w-full max-w-md">

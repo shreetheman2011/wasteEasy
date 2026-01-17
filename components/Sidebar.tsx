@@ -9,13 +9,15 @@ import {
   Home,
   Recycle,
   Settings,
+  TriangleAlert,
 } from "lucide-react";
 
 const sidebarItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/report", label: "Report Waste", icon: MapPin },
-  { href: "/bin-helper", label: "What Bin?", icon: Recycle },
   { href: "/collections", label: "Litter Cleanup", icon: Trash },
+  { href: "/bin-helper", label: "What Bin?", icon: Recycle },
+  { href: "/contamination", label: "Contamination", icon: TriangleAlert },
   { href: "/rewards", label: "Rewards", icon: Coins },
   { href: "/leaderboard", label: "Leaderboard", icon: Medal },
   // { href: "/recycle-rush", label: "Recycle Rush", icon: Recycle },
