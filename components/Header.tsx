@@ -363,8 +363,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
             <>
               <div className="mb-2 mr-5">
                 <p className="text-xs text-gray-600 italic ">
-                  Only Google OAuth and <br />
-                  passwordless email login are <br /> supported.
+                  Only Google OAuth is supported.
                 </p>
               </div>
               <Button
