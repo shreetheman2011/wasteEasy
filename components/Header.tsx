@@ -184,7 +184,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     }
     try {
       toast.error(
-        "Only google oAuth and paswordless email work. No other method works!"
+        "Only google oAuth works. No other method works!"
       );
       const web3authProvider = await web3auth.connect();
       setProvider(web3authProvider);
