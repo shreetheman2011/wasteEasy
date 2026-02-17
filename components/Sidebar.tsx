@@ -69,7 +69,7 @@ export default function Sidebar({ open }: SidebarProps) {
             </Button>
           </Link> */}
 
-          <span className="text-sm" onClick={()=>window.location.href = "https://zero2herotech.vercel.app"}>A Zero-to-Hero Product</span>
+          <span className="text-sm text-blue-500 hover:cursor-pointer" onClick={()=>window.location.href = "https://zero2herotech.vercel.app"}>A Zero-to-Hero Product</span>
           <span className="text-xs">
             Sidebar doesn't minimize in full screen.
           </span>
