@@ -128,8 +128,8 @@ export default function Home() {
             icon={MapPin}
           />
           <ImpactCard
-            title="Non Profits suppport us"
-            value={"2"}
+            title="501(c)(3) nonprofit suppports us"
+            value={"1"}
             icon={Users}
           />
           <ImpactCard
