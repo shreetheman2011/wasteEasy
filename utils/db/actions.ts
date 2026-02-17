@@ -48,7 +48,7 @@ export async function getUnreadNotifications(userId: number) {
       .execute();
   } catch (error) {
     console.log("Error fetching unread notifications", error);
-    return null;
+    return [];
   }
 }
 
@@ -89,7 +89,7 @@ export async function getRewardTransactions(userId: number) {
     return formattedTransactions;
   } catch (error) {
     console.log("Error fetching reward transactions", error);
-    return null;
+    return [];
   }
 }
 

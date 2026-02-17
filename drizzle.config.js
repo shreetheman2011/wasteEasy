@@ -4,7 +4,7 @@ export default {
   out: "./drizzle",
 
   dbCredentials: {
-    url: process.env.DATABASE_URL,
-    connectionString: process.env.DATABASE_URL,
+    url: "postgresql://neondb_owner:npg_WiRfx2eXPqh4@ep-empty-sky-aakqdgqt.westus3.azure.neon.tech/neondb?sslmode=require",
+    connectionString: "postgresql://neondb_owner:npg_WiRfx2eXPqh4@ep-empty-sky-aakqdgqt.westus3.azure.neon.tech/neondb?sslmode=require",
   },
 };
